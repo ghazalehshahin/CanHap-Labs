@@ -49,32 +49,33 @@ FWorld world;
 float worldWidth = 13.0;  
 float worldHeight = 13.0; 
 
+int range = 20; 
+
 /* Initialization of virtual tool */
 HVirtualCoupling  endEffector;
 
 /* define maze blocks */
-ArrayList<FBox> walls = new ArrayList<FBox>();
-FBox wall1;
-FBox wall2;
-FBox wall3;
-FBox wall4;
-FBox wall5;
-FBox wall6;
-FBox wall7;
-FBox wall8;
-FBox wall9;
-FBox wall10;
-FBox wall11;
-FBox wall12;
-FBox wall13;
-FBox wall14;
-FBox wall15;
-FBox wall16;
+ArrayList<FWall> walls = new ArrayList<FWall>();
+FWall wall1;
+FWall wall2;
+FWall wall3;
+FWall wall4;
+FWall wall5;
+FWall wall6;
+FWall wall7;
+FWall wall8;
+FWall wall9;
+FWall wall10;
+FWall wall11;
+FWall wall12;
+FWall wall13;
+FWall wall14;
+FWall wall15;
+FWall wall16;
 
 /* define start and stop button */
 FBox startPoint;
 FCircle endPoint;
-
 
 /* define game start */
 boolean gameStart = false;
@@ -100,7 +101,7 @@ void setup(){
     /* set font type and size */
     f = createFont("Arial", 16, true);
 
-    haplyBoard = new Board(this, Serial.list()[2], 0);
+    haplyBoard = new Board(this, Serial.list()[0], 0);
     widgetOne = new Device(widgetOneID, haplyBoard);
     pantograph = new Pantograph();
     
@@ -239,26 +240,30 @@ void setup(){
 
 /* draw section ********************************************************************************************************/
 void draw(){
-    /* put graphical code here, runs repeatedly at defined framerate in setup, else default at 60fps: */
     if(renderingForce == false){
         background(255);
         textFont(f, 22);
         world.draw();
     }
+    /* put graphical code here, runs repeatedly at defined framerate in setup, else default at 60fps: */
     if(gameStart){
-        for(FBox wall : walls){
-            wall.setFill(0, 0, 0);
+        for(FWall wall : walls){
+            if(wall.getBumpedState() == true) {
+                wall.setFill(0, 0, 0);
+            }
+            else{
+                wall.setFill(255, 255, 255);
+            }
         }
     }
     else{
-        for(FBox wall : walls){
+        for(FWall wall : walls){
             wall.setFill(255, 255, 255);
         }
     }
+    
 }
 /* end draw section ****************************************************************************************************/
-
-
 
 /* simulation section **************************************************************************************************/
 class SimulationThread implements Runnable{
@@ -295,6 +300,15 @@ class SimulationThread implements Runnable{
         if(endEffector.h_avatar.isTouchingBody(endPoint)){
             gameStart = false;
             endEffector.h_avatar.setSensor(true);
+            for(FWall wall : walls){
+                wall.setBumpedState(false);
+            }
+        }
+
+        for(FWall wall : walls){
+            if(endEffector.h_avatar.isTouchingBody(wall)){
+                wall.setBumpedState(true);
+            }
         }
     
         world.step(1.0f/1000.0f);
