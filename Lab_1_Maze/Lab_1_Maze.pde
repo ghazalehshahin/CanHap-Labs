@@ -80,7 +80,6 @@ PImage player;
 void setup(){
     /* put setup code here, run once: */
     String[] data = loadStrings("MazeData.txt");
-    println("there are " + data.length + " lines");
     int[][] mazeData = new int[11][11];
     for (int i = 0; i < 11; ++i) {
         String[] values = split(data[i], " ");
