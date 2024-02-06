@@ -33,7 +33,7 @@ long baseFrameRate = 120;
 /* end framerate definition ********************************************************************************************/ 
 
 /* Screen and world setup parameters */
-float pixelsPerCentimeter = 40.0;
+float pixelsPerCentimeter = 65.0;
 
 /* generic data for a 2DOF device */
 /* joint space */
@@ -46,15 +46,16 @@ PVector fEE = new PVector(0, 0);
 
 /* World boundaries */
 FWorld world;
-float worldWidth = 32.0;  
-float worldHeight = 18.0; 
+float worldWidth = 13.0;  
+float worldHeight = 13.0; 
 
 /* Initialization of virtual tool */
 HVirtualCoupling  endEffector;
 
 /* define maze blocks */
-FBox testWall;
-FBox testWall2;
+ArrayList<FBox> walls = new ArrayList<FBox>();
+FBox wall1;
+FBox wall2;
 
 /* define start and stop button */
 FBox startPoint;
@@ -80,7 +81,7 @@ void setup(){
     /* put setup code here, run once: */
 
     /* screen size definition */
-    size(1280, 720);
+    size(840, 840);
     
     /* set font type and size */
     f = createFont("Arial", 16, true);
@@ -105,11 +106,13 @@ void setup(){
     world = new FWorld();
     
     /* Walls Creation */
-    testWall = new FWall(2.0, 5.0, 1.0, 6.0);
-    world.add(testWall);
+    wall1 = new FWall(1, 1, 5.0, 1.0);
+    walls.add(wall1);
+    world.add(wall1);
 
-    testWall2 = new FWall(2.0, 5.0, 8.0, 1.0);
-    world.add(testWall2);
+    wall2 = new FWall(1, 1, 1.0, 5.0);
+    walls.add(wall2);
+    world.add(wall2);
 
     /* Start Button */
     startPoint = new FBox(1.0, 1.0);
@@ -169,8 +172,17 @@ void draw(){
     if(renderingForce == false){
         background(255);
         textFont(f, 22);
-    
         world.draw();
+    }
+    if(gameStart){
+        for(FBox wall : walls){
+            wall.setFill(0, 0, 0);
+        }
+    }
+    else{
+        for(FBox wall : walls){
+            wall.setFill(255, 255, 255);
+        }
     }
 }
 /* end draw section ****************************************************************************************************/
