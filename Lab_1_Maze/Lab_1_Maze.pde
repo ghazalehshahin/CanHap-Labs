@@ -91,13 +91,6 @@ void setup(){
         }
     }
 
-    for (int i = 0; i < 11; ++i) {
-        for (int j = 0; j < 11; ++j) {
-            print(mazeData[i][j] + " ");
-        }
-        println();
-    }
-
     /* screen size definition */
     size(840, 840);
     
@@ -123,10 +116,13 @@ void setup(){
     hAPI_Fisica.setScale(pixelsPerCentimeter); 
     world = new FWorld();
     
-    int dataIndex = 0;
-    for (int i = 0; i < 11; ++i) {
-        for (int j = 0; j < 11; ++j) {
-            
+    for (int i = 0; i < mazeData.length; ++i) {
+        for (int j = 0; j < mazeData[i].length; ++j) {
+            if(mazeData[i][j]==1){
+                FWall wall = new FWall(j+1, i+1, 1, 1);
+                walls.add(wall);
+                world.add(wall);
+            }
         }
     }
 
