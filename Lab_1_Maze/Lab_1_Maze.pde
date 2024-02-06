@@ -56,22 +56,7 @@ HVirtualCoupling  endEffector;
 
 /* define maze blocks */
 ArrayList<FWall> walls = new ArrayList<FWall>();
-FWall wall1;
-FWall wall2;
-FWall wall3;
-FWall wall4;
-FWall wall5;
-FWall wall6;
-FWall wall7;
-FWall wall8;
-FWall wall9;
-FWall wall10;
-FWall wall11;
-FWall wall12;
-FWall wall13;
-FWall wall14;
-FWall wall15;
-FWall wall16;
+int[] mazeData;
 
 /* define start and stop button */
 FBox startPoint;
@@ -94,6 +79,24 @@ PImage player;
 /* setup section *******************************************************************************************************/
 void setup(){
     /* put setup code here, run once: */
+    String[] data = loadStrings("MazeData.txt");
+    println("there are " + data.length + " lines");
+    int[][] mazeData = new int[11][11];
+    for (int i = 0; i < 11; ++i) {
+        String[] values = split(data[i], " ");
+        if(values.length==11){
+            for (int j = 0; j < values.length; ++j) {
+                mazeData[i][j] = int(values[j]);
+            }
+        }
+    }
+
+    for (int i = 0; i < 11; ++i) {
+        for (int j = 0; j < 11; ++j) {
+            print(mazeData[i][j] + " ");
+        }
+        println();
+    }
 
     /* screen size definition */
     size(840, 840);
@@ -120,70 +123,12 @@ void setup(){
     hAPI_Fisica.setScale(pixelsPerCentimeter); 
     world = new FWorld();
     
-    /* Walls Creation */
-    wall1 = new FWall(1, 1, 5, 1);
-    walls.add(wall1);
-    world.add(wall1);
-
-    wall2 = new FWall(1, 1, 1, 5);
-    walls.add(wall2);
-    world.add(wall2);
-
-    wall3 = new FWall(1, 5, 5, 1);
-    walls.add(wall3);
-    world.add(wall3);
-
-    wall4 = new FWall(3, 5, 1, 3);
-    walls.add(wall4);
-    world.add(wall4);
-
-    wall5 = new FWall(3, 7, 7, 1);
-    walls.add(wall5);
-    world.add(wall5);
-
-    wall6 = new FWall(5, 7, 1, 3);
-    walls.add(wall6);
-    world.add(wall6);
-
-    wall7 = new FWall(5, 9, 5, 1);
-    walls.add(wall7);
-    world.add(wall7);
-
-    wall8 = new FWall(7, 5, 1, 3);
-    walls.add(wall8);
-    world.add(wall8);
-
-    wall9 = new FWall(7, 1, 1, 3);
-    walls.add(wall9);
-    world.add(wall9);
-
-    wall10 = new FWall(3, 3, 7, 1);
-    walls.add(wall10);
-    world.add(wall10);
-
-    wall11 = new FWall(7, 1, 5, 1);
-    walls.add(wall11);
-    world.add(wall11);
-
-    wall12 = new FWall(9, 5, 3, 1);
-    walls.add(wall12);
-    world.add(wall12);
-
-    wall13 = new FWall(11, 1, 1, 11);
-    walls.add(wall13);
-    world.add(wall13);
-
-    wall14 = new FWall(1, 11, 11, 1);
-    walls.add(wall14);
-    world.add(wall14);
-
-    wall15 = new FWall(1, 7, 1, 5);
-    walls.add(wall15);
-    world.add(wall15);
-
-    wall16 = new FWall(3, 9, 1, 3);
-    walls.add(wall16);
-    world.add(wall16);
+    int dataIndex = 0;
+    for (int i = 0; i < 11; ++i) {
+        for (int j = 0; j < 11; ++j) {
+            
+        }
+    }
 
     /* Start Button */
     startPoint = new FBox(1.0, 1.0);
@@ -317,3 +262,17 @@ class SimulationThread implements Runnable{
     }
 }
 /* end simulation section **********************************************************************************************/
+
+// load maze data function
+
+int[] convertBinaryStringToArray(String binaryString) {
+  int[] resultArray = new int[binaryString.length()];
+
+  for (int i = 0; i < binaryString.length(); i++) {
+    char digitChar = binaryString.charAt(i);
+    int digit = Character.getNumericValue(digitChar);
+    resultArray[i] = digit;
+  }
+
+  return resultArray;
+}
