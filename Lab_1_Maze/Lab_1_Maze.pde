@@ -56,6 +56,20 @@ HVirtualCoupling  endEffector;
 ArrayList<FBox> walls = new ArrayList<FBox>();
 FBox wall1;
 FBox wall2;
+FBox wall3;
+FBox wall4;
+FBox wall5;
+FBox wall6;
+FBox wall7;
+FBox wall8;
+FBox wall9;
+FBox wall10;
+FBox wall11;
+FBox wall12;
+FBox wall13;
+FBox wall14;
+FBox wall15;
+FBox wall16;
 
 /* define start and stop button */
 FBox startPoint;
@@ -106,18 +120,75 @@ void setup(){
     world = new FWorld();
     
     /* Walls Creation */
-    wall1 = new FWall(1, 1, 5.0, 1.0);
+    wall1 = new FWall(1, 1, 5, 1);
     walls.add(wall1);
     world.add(wall1);
 
-    wall2 = new FWall(1, 1, 1.0, 5.0);
+    wall2 = new FWall(1, 1, 1, 5);
     walls.add(wall2);
     world.add(wall2);
 
+    wall3 = new FWall(1, 5, 5, 1);
+    walls.add(wall3);
+    world.add(wall3);
+
+    wall4 = new FWall(3, 5, 1, 3);
+    walls.add(wall4);
+    world.add(wall4);
+
+    wall5 = new FWall(3, 7, 7, 1);
+    walls.add(wall5);
+    world.add(wall5);
+
+    wall6 = new FWall(5, 7, 1, 3);
+    walls.add(wall6);
+    world.add(wall6);
+
+    wall7 = new FWall(5, 9, 5, 1);
+    walls.add(wall7);
+    world.add(wall7);
+
+    wall8 = new FWall(7, 5, 1, 3);
+    walls.add(wall8);
+    world.add(wall8);
+
+    wall9 = new FWall(7, 1, 1, 3);
+    walls.add(wall9);
+    world.add(wall9);
+
+    wall10 = new FWall(3, 3, 7, 1);
+    walls.add(wall10);
+    world.add(wall10);
+
+    wall11 = new FWall(7, 1, 5, 1);
+    walls.add(wall11);
+    world.add(wall11);
+
+    wall12 = new FWall(9, 5, 3, 1);
+    walls.add(wall12);
+    world.add(wall12);
+
+    wall13 = new FWall(11, 1, 1, 11);
+    walls.add(wall13);
+    world.add(wall13);
+
+    wall14 = new FWall(1, 11, 11, 1);
+    walls.add(wall14);
+    world.add(wall14);
+
+    wall15 = new FWall(1, 7, 1, 5);
+    walls.add(wall15);
+    world.add(wall15);
+
+    wall16 = new FWall(3, 9, 1, 3);
+    walls.add(wall16);
+    world.add(wall16);
+
     /* Start Button */
     startPoint = new FBox(1.0, 1.0);
-    startPoint.setPosition(worldWidth/2, 1.5);
+    startPoint.setPosition(worldWidth/2, 1);
     startPoint.setStaticBody(true);
+    startPoint.setSensor(true);
     world.add(startPoint);
 
     gate = loadImage("../imgs/gate.png"); 
