@@ -18,69 +18,66 @@ private final ScheduledExecutorService scheduler      = Executors.newScheduledTh
 /* end scheduler definition ********************************************************************************************/ 
 
 /* device block definitions ********************************************************************************************/
-Board             haplyBoard;
-Device            widgetOne;
-Mechanisms        pantograph;
+Board haplyBoard;
+Device widgetOne;
+Mechanisms pantograph;
 
-byte              widgetOneID                         = 5;
-int               CW                                  = 0;
-int               CCW                                 = 1;
-boolean           renderingForce                      = false;
+byte widgetOneID = 5;
+int CW = 0;
+int CCW = 1;
+boolean renderingForce = false;
 /* end device block definition *****************************************************************************************/
 
 /* framerate definition ************************************************************************************************/
-long              baseFrameRate                       = 120;
+long baseFrameRate = 120;
 /* end framerate definition ********************************************************************************************/ 
 
 /* elements definition *************************************************************************************************/
 
 /* Screen and world setup parameters */
-float             pixelsPerCentimeter                 = 40.0;
+float pixelsPerCentimeter = 40.0;
 
 /* generic data for a 2DOF device */
 /* joint space */
-PVector           angles                              = new PVector(0, 0);
-PVector           torques                             = new PVector(0, 0);
+PVector angles = new PVector(0, 0);
+PVector torques = new PVector(0, 0);
 
 /* task space */
-PVector           posEE                               = new PVector(0, 0);
-PVector           fEE                                 = new PVector(0, 0); 
+PVector posEE = new PVector(0, 0);
+PVector fEE = new PVector(0, 0); 
 
 /* World boundaries */
-FWorld            world;
-float             worldWidth                          = 32.0;  
-float             worldHeight                         = 18.0; 
+FWorld world;
+float worldWidth = 32.0;  
+float worldHeight = 18.0; 
 
-float             edgeTopLeftX                        = 0.0; 
-float             edgeTopLeftY                        = 0.0; 
-float             edgeBottomRightX                    = worldWidth; 
-float             edgeBottomRightY                    = worldHeight;
-
-float             gravityAcceleration                 = 980; //cm/s2
 /* Initialization of virtual tool */
 HVirtualCoupling  s;
 
 /* define maze blocks */
-FBox              b1;
-FBox              b2;
-FBox              b3;
-FBox              b4;
-FBox              b5;
-FBox              l1;
+FBox b1;
+FBox  b2;
+FBox b3;
+FBox b4;
+FBox b5;
+FBox l1;
 
 /* define start and stop button */
-FCircle           c1;
-FCircle           c2;
+FBox startPoint;
+FCircle endPoint;
 
 /* define game ball */
-FCircle           g2;
-FBox              g1;
+FCircle g2;
+FBox g1;
 
 /* define game start */
-boolean           gameStart                           = false;
+boolean gameStart = false;
 
 /* text font */
-PFont             f;
+PFont f;
+
+PImage gate;
+PImage treasure;
 
 /* end elements definition *********************************************************************************************/  
 
@@ -94,11 +91,11 @@ void setup(){
     size(1280, 720);
     
     /* set font type and size */
-    f                   = createFont("Arial", 16, true);
+    f = createFont("Arial", 16, true);
 
-    haplyBoard          = new Board(this, Serial.list()[2], 0);
-    widgetOne           = new Device(widgetOneID, haplyBoard);
-    pantograph          = new Pantograph();
+    haplyBoard = new Board(this, Serial.list()[2], 0);
+    widgetOne = new Device(widgetOneID, haplyBoard);
+    pantograph = new Pantograph();
     
     widgetOne.set_mechanism(pantograph);
 
@@ -115,35 +112,42 @@ void setup(){
     /* 2D physics scaling and world creation */
     hAPI_Fisica.init(this); 
     hAPI_Fisica.setScale(pixelsPerCentimeter); 
-    world               = new FWorld();
+    world = new FWorld();
     
     /* Start Button */
-    c1                  = new FCircle(2.0); // diameter is 2
-    c1.setPosition(edgeTopLeftX+2.5, edgeTopLeftY+worldHeight/2.0-3);
-    c1.setFill(0, 255, 0);
-    c1.setStaticBody(true);
-    world.add(c1);
+    startPoint = new FBox(2.0, 2.0);
+    startPoint.setPosition(worldWidth/2, 3);
+    startPoint.setFill(0, 255, 0);
+    startPoint.setStaticBody(true);
+    world.add(startPoint);
+
+    gate = loadImage("../imgs/gate.png"); 
+    gate.resize((int)(hAPI_Fisica.worldToScreen(2)), (int)(hAPI_Fisica.worldToScreen(2)));
+    startPoint.attachImage(gate);
     
     /* Finish Button */
-    c2                  = new FCircle(2.0);
-    c2.setPosition(worldWidth-2.5, edgeTopLeftY+worldHeight/2.0);
-    c2.setFill(200,0,0);
-    c2.setStaticBody(true);
-    c2.setSensor(true);
-    world.add(c2);
+    endPoint = new FCircle(2.0);
+    endPoint.setPosition(2.5, worldHeight/2);
+    endPoint.setFill(200,0,0);
+    endPoint.setStaticBody(true);
+    endPoint.setSensor(true);
+    world.add(endPoint);
+
+    treasure = loadImage("../imgs/treasure.png"); 
+    treasure.resize((int)(hAPI_Fisica.worldToScreen(2)), (int)(hAPI_Fisica.worldToScreen(2)));
+    endPoint.attachImage(treasure);
     
     
     /* Setup the Virtual Coupling Contact Rendering Technique */
-    s                   = new HVirtualCoupling((0.75)); 
+    s = new HVirtualCoupling((0.75)); 
     s.h_avatar.setDensity(4); 
     s.h_avatar.setFill(255,255,0); 
     s.h_avatar.setSensor(true);
 
-    s.init(world, edgeTopLeftX+worldWidth/2, edgeTopLeftY+2); 
+    s.init(world, worldWidth/2, 2); 
     
     /* World conditions setup */
-    world.setGravity((0.0), gravityAcceleration); //1000 cm/(s^2)
-    world.setEdges((edgeTopLeftX), (edgeTopLeftY), (edgeBottomRightX), (edgeBottomRightY)); 
+    world.setEdges((0), (0), (worldWidth), (worldHeight)); 
     world.setEdgesRestitution(.4);
     world.setEdgesFriction(0.5);
 
@@ -170,12 +174,13 @@ void draw(){
         if(gameStart){
         fill(0, 0, 0);
         textAlign(CENTER);
-        text("Touch the green circle to reset", width/2, 90);
+        text("Reach the treasure to win!", width/2, 60);
         }
+
         else{
         fill(128, 128, 128);
         textAlign(CENTER);
-        text("Touch the green circle to start the maze", width/2, 60);
+        text("Go to the entrance to start the maze", width/2, 60);
         }
     
         world.draw();
@@ -202,7 +207,7 @@ class SimulationThread implements Runnable{
         posEE.set(posEE.copy().mult(200));  
         }
         
-        s.setToolPosition(edgeTopLeftX+worldWidth/2-(posEE).x, edgeTopLeftY+(posEE).y-7); 
+        s.setToolPosition(worldWidth/2-(posEE).x, (posEE).y-7); 
         s.updateCouplingForce();
     
     
@@ -212,12 +217,12 @@ class SimulationThread implements Runnable{
         torques.set(widgetOne.set_device_torques(fEE.array()));
         widgetOne.device_write_torques();
         
-        if (s.h_avatar.isTouchingBody(c1)){
+        if (s.h_avatar.isTouchingBody(startPoint)){
             gameStart = true;
             s.h_avatar.setSensor(false);
         }
 
-        if(s.h_avatar.isTouchingBody(c2)){
+        if(s.h_avatar.isTouchingBody(endPoint)){
             gameStart = false;
             s.h_avatar.setSensor(true);
         }
