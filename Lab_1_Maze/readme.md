@@ -57,6 +57,10 @@ I also rescaled everything so the maze was 13x13 units with a 840x840 pixel wind
 
 Now for the wall reveal mechanic, I added a `bumped` parameter to the walls, and simply switched it to true if any of them made contact in the simulation loop. Then I updated my drawing code to only draw walls which were “bumped”. The final result looked like this.
 
+
+https://github.com/GAmuzak/CanHap-Labs/assets/53485887/1e3e2824-8d64-4d87-9fe6-86df53eb748a
+
+
 I still wasn’t too happy with the maze generation technique with all the walls, and decided I want to upgrade it to read from my maze data line and generate single boxes on the basis of that.
 
 So I looked into how to feed data into processing, and managed to feed a text file containing 1s and 0s representing my maze into a 2d array, which I then used to construct my maze with individual fboxes. This implementation is a lot cleaner than generating 13 big walls.
@@ -86,6 +90,10 @@ for (int i = 0; i < mazeData.length; ++i) {
 ```
 
 Another thing I like about this approach is the maze now reveals itself much more gradually, and actually requires the player to explore a lot more.
+
+
+https://github.com/GAmuzak/CanHap-Labs/assets/53485887/7b1cd7f0-b3c7-47e1-b97f-13f0f7e0da8f
+
 
 This would be around the time I would go ahead and fixed the player icon, but I’ve grown too fond of my Spinny Boi, so he’ll be sticking around. Who knows, he might show up in the next assignment too :D
 
