@@ -32,8 +32,6 @@ boolean renderingForce = false;
 long baseFrameRate = 120;
 /* end framerate definition ********************************************************************************************/ 
 
-/* elements definition *************************************************************************************************/
-
 /* Screen and world setup parameters */
 float pixelsPerCentimeter = 40.0;
 
@@ -52,23 +50,16 @@ float worldWidth = 32.0;
 float worldHeight = 18.0; 
 
 /* Initialization of virtual tool */
-HVirtualCoupling  s;
+HVirtualCoupling  endEffector;
 
 /* define maze blocks */
-FBox b1;
-FBox  b2;
-FBox b3;
-FBox b4;
-FBox b5;
-FBox l1;
+FBox testWall;
+FBox testWall2;
 
 /* define start and stop button */
 FBox startPoint;
 FCircle endPoint;
 
-/* define game ball */
-FCircle g2;
-FBox g1;
 
 /* define game start */
 boolean gameStart = false;
@@ -78,6 +69,7 @@ PFont f;
 
 PImage gate;
 PImage treasure;
+PImage player;
 
 /* end elements definition *********************************************************************************************/  
 
@@ -105,47 +97,54 @@ void setup(){
     widgetOne.add_encoder(1, CCW, 241, 10752, 2);
     widgetOne.add_encoder(2, CW, -61, 10752, 1);
     
-    
     widgetOne.device_set_parameters();
-    
     
     /* 2D physics scaling and world creation */
     hAPI_Fisica.init(this); 
     hAPI_Fisica.setScale(pixelsPerCentimeter); 
     world = new FWorld();
     
+    /* Walls Creation */
+    testWall = new FWall(2.0, 5.0, 1.0, 6.0);
+    world.add(testWall);
+
+    testWall2 = new FWall(2.0, 5.0, 8.0, 1.0);
+    world.add(testWall2);
+
     /* Start Button */
-    startPoint = new FBox(2.0, 2.0);
-    startPoint.setPosition(worldWidth/2, 3);
-    startPoint.setFill(0, 255, 0);
+    startPoint = new FBox(1.0, 1.0);
+    startPoint.setPosition(worldWidth/2, 1.5);
     startPoint.setStaticBody(true);
     world.add(startPoint);
 
     gate = loadImage("../imgs/gate.png"); 
-    gate.resize((int)(hAPI_Fisica.worldToScreen(2)), (int)(hAPI_Fisica.worldToScreen(2)));
+    gate.resize((int)(hAPI_Fisica.worldToScreen(1)), (int)(hAPI_Fisica.worldToScreen(1)));
     startPoint.attachImage(gate);
     
     /* Finish Button */
-    endPoint = new FCircle(2.0);
-    endPoint.setPosition(2.5, worldHeight/2);
-    endPoint.setFill(200,0,0);
+    endPoint = new FCircle(1.0);
+    endPoint.setPosition(1.5, worldHeight/2);
     endPoint.setStaticBody(true);
     endPoint.setSensor(true);
     world.add(endPoint);
 
     treasure = loadImage("../imgs/treasure.png"); 
-    treasure.resize((int)(hAPI_Fisica.worldToScreen(2)), (int)(hAPI_Fisica.worldToScreen(2)));
+    treasure.resize((int)(hAPI_Fisica.worldToScreen(1)), (int)(hAPI_Fisica.worldToScreen(1)));
     endPoint.attachImage(treasure);
     
     
     /* Setup the Virtual Coupling Contact Rendering Technique */
-    s = new HVirtualCoupling((0.75)); 
-    s.h_avatar.setDensity(4); 
-    s.h_avatar.setFill(255,255,0); 
-    s.h_avatar.setSensor(true);
+    endEffector = new HVirtualCoupling((0.75)); 
+    endEffector.h_avatar.setDensity(4); 
+    endEffector.h_avatar.setFill(255,255,0); 
+    endEffector.h_avatar.setSensor(true);
 
-    s.init(world, worldWidth/2, 2); 
-    
+    player = loadImage("../imgs/person.png"); 
+    player.resize((int)(hAPI_Fisica.worldToScreen(1)), (int)(hAPI_Fisica.worldToScreen(1)));
+    endEffector.h_avatar.attachImage(player);
+
+    endEffector.init(world, worldWidth/2, 2); 
+
     /* World conditions setup */
     world.setEdges((0), (0), (worldWidth), (worldHeight)); 
     world.setEdgesRestitution(.4);
@@ -171,18 +170,6 @@ void draw(){
         background(255);
         textFont(f, 22);
     
-        if(gameStart){
-        fill(0, 0, 0);
-        textAlign(CENTER);
-        text("Reach the treasure to win!", width/2, 60);
-        }
-
-        else{
-        fill(128, 128, 128);
-        textAlign(CENTER);
-        text("Go to the entrance to start the maze", width/2, 60);
-        }
-    
         world.draw();
     }
 }
@@ -207,33 +194,25 @@ class SimulationThread implements Runnable{
         posEE.set(posEE.copy().mult(200));  
         }
         
-        s.setToolPosition(worldWidth/2-(posEE).x, (posEE).y-7); 
-        s.updateCouplingForce();
+        endEffector.setToolPosition(worldWidth/2-(posEE).x, (posEE).y-7); 
+        endEffector.updateCouplingForce();
     
     
-        fEE.set(-s.getVirtualCouplingForceX(), s.getVirtualCouplingForceY());
+        fEE.set(-endEffector.getVirtualCouplingForceX(), endEffector.getVirtualCouplingForceY());
         fEE.div(100000); //dynes to newtons
         
         torques.set(widgetOne.set_device_torques(fEE.array()));
         widgetOne.device_write_torques();
         
-        if (s.h_avatar.isTouchingBody(startPoint)){
+        if (endEffector.h_avatar.isTouchingBody(startPoint)){
             gameStart = true;
-            s.h_avatar.setSensor(false);
+            endEffector.h_avatar.setSensor(false);
         }
 
-        if(s.h_avatar.isTouchingBody(endPoint)){
+        if(endEffector.h_avatar.isTouchingBody(endPoint)){
             gameStart = false;
-            s.h_avatar.setSensor(true);
+            endEffector.h_avatar.setSensor(true);
         }
-    
-        /* Viscous layer codes */
-        if (s.h_avatar.isTouchingBody(l1)){
-        s.h_avatar.setDamping(400);
-        }
-        else{
-        s.h_avatar.setDamping(10); 
-        }  
     
         world.step(1.0f/1000.0f);
     
