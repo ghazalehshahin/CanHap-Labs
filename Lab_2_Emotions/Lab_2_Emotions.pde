@@ -45,7 +45,9 @@ int               hardwareVersion                     = 3;
 
 /* framerate definition ************************************************************************************************/
 long              baseFrameRate                       = 120;
-float             twoSecWindow;
+float             oneSecondWindow;
+float[]           windowTimings                       = {0.1, 0.2, 0.3, 0.4};
+
 /* end framerate definition ********************************************************************************************/ 
 
 
@@ -210,29 +212,41 @@ class SimulationThread implements Runnable{
         torques.set(widgetOne.set_device_torques(fEE.array()));
         widgetOne.device_write_torques();
         float timeStep = 1.0f/1000.0f;
-        twoSecWindow += timeStep;
+        oneSecondWindow += timeStep;
         world.step(timeStep);
-        if(twoSecWindow>=1) twoSecWindow=0;
-        beatHeart(twoSecWindow);
+        if(oneSecondWindow>=1) oneSecondWindow=0;
+        beatHeart(oneSecondWindow, windowTimings, 75, 25);
         renderingForce = false;
     }
 }
 /* end simulation section **********************************************************************************************/
 
-void beatHeart(float twoSecWindow) {
-    boolean firstWindow = (twoSecWindow < 0.1);
-    boolean secondWindow = (twoSecWindow >= 0.1 && twoSecWindow < 0.2);
-    boolean thirdWindow = (twoSecWindow >= 0.2 && twoSecWindow < 0.3);
-    boolean fourthWindow = (twoSecWindow >= 0.3 && twoSecWindow < 0.4);
+void beatHeart(float oneSecond, float[] windowTimings, int higherStrength, int lowerStrength) {
+    int windowIndex = -1;
+    for (int i = 0; i < windowTimings.length; i++) {
+        if (oneSecond < windowTimings[i]) {
+            windowIndex = i;
+            break;
+        }
+    }
 
-    if (firstWindow || thirdWindow) {
-        coupledEndEffector.setAvatarVelocity(0, -50);
-    } 
-    else if (secondWindow || fourthWindow) {
-        coupledEndEffector.setAvatarVelocity(0, 50);
-    } 
-    else {
-        coupledEndEffector.setAvatarVelocity(0, 0);
+    switch (windowIndex) {
+        case 0:
+            coupledEndEffector.setAvatarVelocity(0, -higherStrength);
+            break;
+        case 1:
+            coupledEndEffector.setAvatarVelocity(0, higherStrength);
+            break;
+        case 2:
+            coupledEndEffector.setAvatarVelocity(0, -lowerStrength);
+            break;
+        case 3:
+            coupledEndEffector.setAvatarVelocity(0, lowerStrength);
+            break;
+        default:
+            coupledEndEffector.setAvatarVelocity(0, 0);
+            break;
     }
 }
+
 
