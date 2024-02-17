@@ -1,18 +1,11 @@
 /**
  **********************************************************************************************************************
- * @file       sketch_4_Wall_Physics.pde
- * @author     Steve Ding, Colin Gallacher
- * @version    V4.1.0
+ * @file       Lab_2_Emotions.pde
+ * @author     Rishav Banerjee
+ * @version    V1.1.0
  * @date       08-January-2021
- * @brief      wall haptic example using 2D physics engine 
- **********************************************************************************************************************
- * @attention
- *
- *
- **********************************************************************************************************************
- */
-
-
+ * @brief      Emotions Showcase using Haptics only 
+**/
 
 /* library imports *****************************************************************************************************/ 
 import processing.serial.*;
@@ -20,13 +13,9 @@ import static java.util.concurrent.TimeUnit.*;
 import java.util.concurrent.*;
 /* end library imports *************************************************************************************************/  
 
-
-
 /* scheduler definition ************************************************************************************************/ 
 private final ScheduledExecutorService scheduler      = Executors.newScheduledThreadPool(1);
 /* end scheduler definition ********************************************************************************************/ 
-
-
 
 /* device block definitions ********************************************************************************************/
 Board             haplyBoard;
@@ -41,18 +30,14 @@ boolean           renderingForce                      = false;
 int               hardwareVersion                     = 3;
 /* end device block definition *****************************************************************************************/
 
-
-
 /* framerate definition ************************************************************************************************/
 long              baseFrameRate                       = 120;
 float             currTime;
-float[]           slowWindowTimings                       = {0.1, 0.2, 0.5, 0.6};
+float[]           slowWindowTimings                       = {0.1, 0.3, 0.5, 0.7};
 float[]           normalWindowTimings                     = {0.1, 0.2, 0.3, 0.4};
 float[]           fastWindowTimings                       = {0.1, 0.15, 0.2, 0.25};
 
 /* end framerate definition ********************************************************************************************/ 
-
-
 
 /* elements definition *************************************************************************************************/
 
@@ -78,18 +63,11 @@ float             edgeTopLeftY                        = 0.0;
 float             edgeBottomRightX                    = worldWidth; 
 float             edgeBottomRightY                    = worldHeight;
 
-
-/* Initialization of wall */
-FBox              wall;
-
-
 /* Initialization of virtual tool */
 HVirtualCoupling  coupledEndEffector;
 PImage            haplyAvatar;
 
 /* end elements definition *********************************************************************************************/ 
-
-
 
 /* setup section *******************************************************************************************************/
 void setup(){
@@ -128,29 +106,21 @@ void setup(){
         widgetOne.add_encoder(2, CCW, 12, 4880, 1); 
     }
     
-    
     widgetOne.device_set_parameters();
-    
     
     /* 2D physics scaling and world creation */
     hAPI_Fisica.init(this); 
     hAPI_Fisica.setScale(pixelsPerCentimeter); 
     world                  = new FWorld();
-
         
     /* Haptic Tool Initialization */
     coupledEndEffector     = new HVirtualCoupling((1)); 
     coupledEndEffector.h_avatar.setDensity(4);  
     coupledEndEffector.init(world, edgeTopLeftX+worldWidth/2, edgeTopLeftY+2); 
     
-    
-    /* If you are developing on a Mac users must update the path below 
-    * from "../img/Haply_avatar.png" to "./img/Haply_avatar.png" 
-    */
     haplyAvatar = loadImage("../img/Haply_avatar.png"); 
     haplyAvatar.resize((int)(hAPI_Fisica.worldToScreen(1)), (int)(hAPI_Fisica.worldToScreen(1)));
     coupledEndEffector.h_avatar.attachImage(haplyAvatar); 
-
 
     /* world conditions setup */
     world.setGravity((0.0), (1000.0)); //1000 cm/(s^2)
@@ -169,8 +139,6 @@ void setup(){
 }
 /* end setup section ***************************************************************************************************/
 
-
-
 /* draw section ********************************************************************************************************/
 void draw(){
   /* put graphical code here, runs repeatedly at defined framerate in setup, else default at 60fps: */
@@ -180,8 +148,6 @@ void draw(){
     }
 }
 /* end draw section ****************************************************************************************************/
-
-
 
 /* simulation section **************************************************************************************************/
 class SimulationThread implements Runnable{
@@ -246,7 +212,6 @@ void handleHeart(float currTime){
     }
 }
 
-
 void beatHeart(float timeSlot, float[] windowTimings, int higherStrength, int lowerStrength) {
     int windowIndex = -1;
     for (int i = 0; i < windowTimings.length; i++) {
@@ -274,5 +239,3 @@ void beatHeart(float timeSlot, float[] windowTimings, int higherStrength, int lo
             break;
     }
 }
-
-
