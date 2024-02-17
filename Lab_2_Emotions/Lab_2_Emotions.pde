@@ -45,7 +45,7 @@ int               hardwareVersion                     = 3;
 
 /* framerate definition ************************************************************************************************/
 long              baseFrameRate                       = 120;
-float             curTime;
+float             twoSecWindow;
 /* end framerate definition ********************************************************************************************/ 
 
 
@@ -186,18 +186,18 @@ class SimulationThread implements Runnable{
         renderingForce = true;
         
         if(haplyBoard.data_available()){
-        /* GET END-EFFECTOR STATE (TASK SPACE) */
-        widgetOne.device_read_data();
-        
-        angles.set(widgetOne.get_device_angles()); 
-        posEE.set(widgetOne.get_device_position(angles.array()));
-        
-        if(hardwareVersion == 2){
-            posEE.set(posEE.copy().mult(200));
-        }
-        else if(hardwareVersion == 3){
-            posEE.set(posEE.copy().mult(150));
-        }
+            /* GET END-EFFECTOR STATE (TASK SPACE) */
+            widgetOne.device_read_data();
+            
+            angles.set(widgetOne.get_device_angles()); 
+            posEE.set(widgetOne.get_device_position(angles.array()));
+            
+            if(hardwareVersion == 2){
+                posEE.set(posEE.copy().mult(200));
+            }
+            else if(hardwareVersion == 3){
+                posEE.set(posEE.copy().mult(150));
+            }
         }
         
         coupledEndEffector.setToolPosition(edgeTopLeftX+worldWidth/2-(posEE).x, edgeTopLeftY+(posEE).y-7); 
@@ -210,17 +210,29 @@ class SimulationThread implements Runnable{
         torques.set(widgetOne.set_device_torques(fEE.array()));
         widgetOne.device_write_torques();
         float timeStep = 1.0f/1000.0f;
-        curTime += timeStep;
+        twoSecWindow += timeStep;
         world.step(timeStep);
-        println(curTime);
-        if(curTime>=1) curTime-=1;
-        if(curTime<0.5){
-            coupledEndEffector.setAvatarVelocity(0, 50);
-        }
-        else{
-            coupledEndEffector.setAvatarVelocity(0, -50);
-        }
+        if(twoSecWindow>=1) twoSecWindow=0;
+        beatHeart(twoSecWindow);
         renderingForce = false;
     }
 }
 /* end simulation section **********************************************************************************************/
+
+void beatHeart(float twoSecWindow) {
+    boolean firstWindow = (twoSecWindow < 0.1);
+    boolean secondWindow = (twoSecWindow >= 0.1 && twoSecWindow < 0.2);
+    boolean thirdWindow = (twoSecWindow >= 0.2 && twoSecWindow < 0.3);
+    boolean fourthWindow = (twoSecWindow >= 0.3 && twoSecWindow < 0.4);
+
+    if (firstWindow || thirdWindow) {
+        coupledEndEffector.setAvatarVelocity(0, -50);
+    } 
+    else if (secondWindow || fourthWindow) {
+        coupledEndEffector.setAvatarVelocity(0, 50);
+    } 
+    else {
+        coupledEndEffector.setAvatarVelocity(0, 0);
+    }
+}
+
