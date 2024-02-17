@@ -45,6 +45,7 @@ int               hardwareVersion                     = 3;
 
 /* framerate definition ************************************************************************************************/
 long              baseFrameRate                       = 120;
+float             curTime;
 /* end framerate definition ********************************************************************************************/ 
 
 
@@ -88,97 +89,79 @@ PImage            haplyAvatar;
 
 /* setup section *******************************************************************************************************/
 void setup(){
-  /* put setup code here, run once: */
-  
-  /* screen size definition */
-  size(1000, 650);
-  
-  /* device setup */
-  
-  /**  
-   * The board declaration needs to be changed depending on which USB serial port the Haply board is connected.
-   * In the base example, a connection is setup to the first detected serial device, this parameter can be changed
-   * to explicitly state the serial port will look like the following for different OS:
-   *
-   *      windows:      haplyBoard = new Board(this, "COM10", 0);
-   *      linux:        haplyBoard = new Board(this, "/dev/ttyUSB0", 0);
-   *      mac:          haplyBoard = new Board(this, "/dev/cu.usbmodem1411", 0);
-   */ 
-  haplyBoard          = new Board(this, Serial.list()[2], 0);
-  widgetOne           = new Device(widgetOneID, haplyBoard);
-  pantograph          = new Pantograph(hardwareVersion);
-  
-  widgetOne.set_mechanism(pantograph);
-  
-  if(hardwareVersion == 2){
-    widgetOne.add_actuator(1, CCW, 2);
-    widgetOne.add_actuator(2, CW, 1);
- 
-    widgetOne.add_encoder(1, CCW, 241, 10752, 2);
-    widgetOne.add_encoder(2, CW, -61, 10752, 1);
-  }
-  else if(hardwareVersion == 3){
-    widgetOne.add_actuator(1, CW, 2);
-    widgetOne.add_actuator(2, CW, 1);
- 
-    widgetOne.add_encoder(1, CCW, 180, 4880, 2);
-    widgetOne.add_encoder(2, CCW, 0, 4880, 1); 
-  }
-  else{
-    widgetOne.add_actuator(1, CCW, 2);
-    widgetOne.add_actuator(2, CCW, 1);
- 
-    widgetOne.add_encoder(1, CCW, 168, 4880, 2);
-    widgetOne.add_encoder(2, CCW, 12, 4880, 1); 
-  }
-  
-  
-  widgetOne.device_set_parameters();
-  
-  
-  /* 2D physics scaling and world creation */
-  hAPI_Fisica.init(this); 
-  hAPI_Fisica.setScale(pixelsPerCentimeter); 
-  world                  = new FWorld();
-  
-  
-  /* creation of wall */
-  wall                   = new FBox(10.0, 0.5);
-  wall.setPosition(edgeTopLeftX+worldWidth/2.0, edgeTopLeftY+2*worldHeight/3.0);
-  wall.setStatic(true);
-  wall.setFill(0, 0, 0);
-  world.add(wall);
-
+    /* put setup code here, run once: */
     
-  /* Haptic Tool Initialization */
-  coupledEndEffector     = new HVirtualCoupling((1)); 
-  coupledEndEffector.h_avatar.setDensity(4);  
-  coupledEndEffector.init(world, edgeTopLeftX+worldWidth/2, edgeTopLeftY+2); 
- 
-  
-  /* If you are developing on a Mac users must update the path below 
-   * from "../img/Haply_avatar.png" to "./img/Haply_avatar.png" 
-   */
-  haplyAvatar = loadImage("../img/Haply_avatar.png"); 
-  haplyAvatar.resize((int)(hAPI_Fisica.worldToScreen(1)), (int)(hAPI_Fisica.worldToScreen(1)));
-  coupledEndEffector.h_avatar.attachImage(haplyAvatar); 
+    /* screen size definition */
+    size(1000, 650);
+    
+    /* device setup */
+
+    haplyBoard          = new Board(this, Serial.list()[2], 0);
+    widgetOne           = new Device(widgetOneID, haplyBoard);
+    pantograph          = new Pantograph(hardwareVersion);
+    
+    widgetOne.set_mechanism(pantograph);
+    
+    if(hardwareVersion == 2){
+        widgetOne.add_actuator(1, CCW, 2);
+        widgetOne.add_actuator(2, CW, 1);
+    
+        widgetOne.add_encoder(1, CCW, 241, 10752, 2);
+        widgetOne.add_encoder(2, CW, -61, 10752, 1);
+    }
+    else if(hardwareVersion == 3){
+        widgetOne.add_actuator(1, CW, 2);
+        widgetOne.add_actuator(2, CW, 1);
+    
+        widgetOne.add_encoder(1, CCW, 180, 4880, 2);
+        widgetOne.add_encoder(2, CCW, 0, 4880, 1); 
+    }
+    else{
+        widgetOne.add_actuator(1, CCW, 2);
+        widgetOne.add_actuator(2, CCW, 1);
+    
+        widgetOne.add_encoder(1, CCW, 168, 4880, 2);
+        widgetOne.add_encoder(2, CCW, 12, 4880, 1); 
+    }
+    
+    
+    widgetOne.device_set_parameters();
+    
+    
+    /* 2D physics scaling and world creation */
+    hAPI_Fisica.init(this); 
+    hAPI_Fisica.setScale(pixelsPerCentimeter); 
+    world                  = new FWorld();
+
+        
+    /* Haptic Tool Initialization */
+    coupledEndEffector     = new HVirtualCoupling((1)); 
+    coupledEndEffector.h_avatar.setDensity(4);  
+    coupledEndEffector.init(world, edgeTopLeftX+worldWidth/2, edgeTopLeftY+2); 
+    
+    
+    /* If you are developing on a Mac users must update the path below 
+    * from "../img/Haply_avatar.png" to "./img/Haply_avatar.png" 
+    */
+    haplyAvatar = loadImage("../img/Haply_avatar.png"); 
+    haplyAvatar.resize((int)(hAPI_Fisica.worldToScreen(1)), (int)(hAPI_Fisica.worldToScreen(1)));
+    coupledEndEffector.h_avatar.attachImage(haplyAvatar); 
 
 
-  /* world conditions setup */
-  world.setGravity((0.0), (1000.0)); //1000 cm/(s^2)
-  // world.setEdges((edgeTopLeftX-1), (edgeTopLeftY-1), (edgeBottomRightX+1), (edgeBottomRightY-1)); 
-  // world.setEdgesRestitution(0.4);
-  // world.setEdgesFriction(0.5);
-  
-  world.draw();
-  
-  /* setup framerate speed */
-  frameRate(baseFrameRate);
-  
-  /* setup simulation thread to run at 1kHz */ 
-  SimulationThread st = new SimulationThread();
-  scheduler.scheduleAtFixedRate(st, 1, 1, MILLISECONDS);
-
+    /* world conditions setup */
+    world.setGravity((0.0), (1000.0)); //1000 cm/(s^2)
+    // world.setEdges((edgeTopLeftX-1), (edgeTopLeftY-1), (edgeBottomRightX+1), (edgeBottomRightY-1)); 
+    // world.setEdgesRestitution(0.4);
+    // world.setEdgesFriction(0.5);
+    
+    world.draw();
+    
+    /* setup framerate speed */
+    frameRate(baseFrameRate);
+    
+    /* setup simulation thread to run at 1kHz */ 
+    SimulationThread st = new SimulationThread();
+    scheduler.scheduleAtFixedRate(st, 1, 1, MILLISECONDS);
 }
 /* end setup section ***************************************************************************************************/
 
@@ -187,10 +170,10 @@ void setup(){
 /* draw section ********************************************************************************************************/
 void draw(){
   /* put graphical code here, runs repeatedly at defined framerate in setup, else default at 60fps: */
-  if(renderingForce == false){
-    background(255);
-    world.draw();
-  }
+    if(renderingForce == false){
+        background(255);
+        world.draw();
+    }
 }
 /* end draw section ****************************************************************************************************/
 
@@ -198,40 +181,46 @@ void draw(){
 
 /* simulation section **************************************************************************************************/
 class SimulationThread implements Runnable{
-  
-  public void run(){
-    /* put haptic simulation code here, runs repeatedly at 1kHz as defined in setup */
-    
-    renderingForce = true;
-    
-    if(haplyBoard.data_available()){
-      /* GET END-EFFECTOR STATE (TASK SPACE) */
-      widgetOne.device_read_data();
-    
-      angles.set(widgetOne.get_device_angles()); 
-      posEE.set(widgetOne.get_device_position(angles.array()));
-      
-      if(hardwareVersion == 2){
-        posEE.set(posEE.copy().mult(200));
-      }
-      else if(hardwareVersion == 3){
-        posEE.set(posEE.copy().mult(150));
-      }
+    public void run(){
+        /* put haptic simulation code here, runs repeatedly at 1kHz as defined in setup */
+        renderingForce = true;
+        
+        if(haplyBoard.data_available()){
+        /* GET END-EFFECTOR STATE (TASK SPACE) */
+        widgetOne.device_read_data();
+        
+        angles.set(widgetOne.get_device_angles()); 
+        posEE.set(widgetOne.get_device_position(angles.array()));
+        
+        if(hardwareVersion == 2){
+            posEE.set(posEE.copy().mult(200));
+        }
+        else if(hardwareVersion == 3){
+            posEE.set(posEE.copy().mult(150));
+        }
+        }
+        
+        coupledEndEffector.setToolPosition(edgeTopLeftX+worldWidth/2-(posEE).x, edgeTopLeftY+(posEE).y-7); 
+        
+        
+        coupledEndEffector.updateCouplingForce();
+        fEE.set(-coupledEndEffector.getVirtualCouplingForceX(), coupledEndEffector.getVirtualCouplingForceY());
+        fEE.div(100000); //dynes to newtons
+        
+        torques.set(widgetOne.set_device_torques(fEE.array()));
+        widgetOne.device_write_torques();
+        float timeStep = 1.0f/1000.0f;
+        curTime += timeStep;
+        world.step(timeStep);
+        println(curTime);
+        if(curTime>=1) curTime-=1;
+        if(curTime<0.5){
+            coupledEndEffector.setAvatarVelocity(0, 50);
+        }
+        else{
+            coupledEndEffector.setAvatarVelocity(0, -50);
+        }
+        renderingForce = false;
     }
-    
-    coupledEndEffector.setToolPosition(edgeTopLeftX+worldWidth/2-(posEE).x, edgeTopLeftY+(posEE).y-7); 
-    
-    
-    coupledEndEffector.updateCouplingForce();
-    fEE.set(-coupledEndEffector.getVirtualCouplingForceX(), coupledEndEffector.getVirtualCouplingForceY());
-    fEE.div(100000); //dynes to newtons
-    
-    torques.set(widgetOne.set_device_torques(fEE.array()));
-    widgetOne.device_write_torques();
-  
-    world.step(1.0f/1000.0f);
-  
-    renderingForce = false;
-  }
 }
 /* end simulation section **********************************************************************************************/
