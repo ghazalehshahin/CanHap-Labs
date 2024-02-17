@@ -45,8 +45,8 @@ int               hardwareVersion                     = 3;
 
 /* framerate definition ************************************************************************************************/
 long              baseFrameRate                       = 120;
-float             oneSecondWindow;
-float[]           windowTimings                       = {0.1, 0.2, 0.3, 0.4};
+float             currTime;
+float[]           windowTimings                       = {0.1, 0.2, 0.5, 0.6};
 
 /* end framerate definition ********************************************************************************************/ 
 
@@ -204,22 +204,42 @@ class SimulationThread implements Runnable{
         
         coupledEndEffector.setToolPosition(edgeTopLeftX+worldWidth/2-(posEE).x, edgeTopLeftY+(posEE).y-7); 
         
-        
         coupledEndEffector.updateCouplingForce();
+
         fEE.set(-coupledEndEffector.getVirtualCouplingForceX(), coupledEndEffector.getVirtualCouplingForceY());
         fEE.div(100000); //dynes to newtons
         
         torques.set(widgetOne.set_device_torques(fEE.array()));
         widgetOne.device_write_torques();
+
         float timeStep = 1.0f/1000.0f;
-        oneSecondWindow += timeStep;
+
+        currTime += timeStep;
+        handleHeart(currTime);
+        
         world.step(timeStep);
-        if(oneSecondWindow>=1) oneSecondWindow=0;
-        beatHeart(oneSecondWindow, windowTimings, 75, 25);
         renderingForce = false;
     }
 }
 /* end simulation section **********************************************************************************************/
+
+void handleHeart(float currTime){
+    float yPos = coupledEndEffector.getToolPositionY();
+    int currTimeInt = int(currTime);
+    int onediff = currTimeInt%2;
+    float twoSecWindow = currTime - (currTimeInt - onediff);
+    println(twoSecWindow);
+    if(yPos<-2){
+        
+    }
+    else if (yPos>3){
+        //fast
+    }
+    else{
+        //normal
+    }
+}
+
 
 void beatHeart(float oneSecond, float[] windowTimings, int higherStrength, int lowerStrength) {
     int windowIndex = -1;
