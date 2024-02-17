@@ -46,7 +46,9 @@ int               hardwareVersion                     = 3;
 /* framerate definition ************************************************************************************************/
 long              baseFrameRate                       = 120;
 float             currTime;
-float[]           windowTimings                       = {0.1, 0.2, 0.5, 0.6};
+float[]           slowWindowTimings                       = {0.1, 0.2, 0.5, 0.6};
+float[]           normalWindowTimings                     = {0.1, 0.2, 0.3, 0.4};
+float[]           fastWindowTimings                       = {0.1, 0.15, 0.2, 0.25};
 
 /* end framerate definition ********************************************************************************************/ 
 
@@ -98,7 +100,7 @@ void setup(){
     
     /* device setup */
 
-    haplyBoard          = new Board(this, Serial.list()[2], 0);
+    haplyBoard          = new Board(this, Serial.list()[0], 0);
     widgetOne           = new Device(widgetOneID, haplyBoard);
     pantograph          = new Pantograph(hardwareVersion);
     
@@ -228,23 +230,27 @@ void handleHeart(float currTime){
     int currTimeInt = int(currTime);
     int onediff = currTimeInt%2;
     float twoSecWindow = currTime - (currTimeInt - onediff);
-    println(twoSecWindow);
     if(yPos<-2){
-        
+        beatHeart(twoSecWindow, slowWindowTimings, 60, 30);
     }
-    else if (yPos>3){
-        //fast
+    else if (yPos>7){
+        float halfSecondWindow = twoSecWindow;
+        if(halfSecondWindow>1) halfSecondWindow-=1;
+        if(halfSecondWindow>0.5) halfSecondWindow-=0.5;
+        beatHeart(halfSecondWindow, fastWindowTimings, 60, 30);
     }
     else{
-        //normal
+        float oneSecondWindow = twoSecWindow;
+        if(oneSecondWindow>1) oneSecondWindow-=1;
+        beatHeart(oneSecondWindow, normalWindowTimings, 60, 30);
     }
 }
 
 
-void beatHeart(float oneSecond, float[] windowTimings, int higherStrength, int lowerStrength) {
+void beatHeart(float timeSlot, float[] windowTimings, int higherStrength, int lowerStrength) {
     int windowIndex = -1;
     for (int i = 0; i < windowTimings.length; i++) {
-        if (oneSecond < windowTimings[i]) {
+        if (timeSlot < windowTimings[i]) {
             windowIndex = i;
             break;
         }
