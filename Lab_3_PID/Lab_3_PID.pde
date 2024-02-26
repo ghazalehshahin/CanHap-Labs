@@ -302,10 +302,11 @@ public void UpdateCirclePosition(long time){
 }
 
 public void UpdateSquarePosition(long time){
+    y0 = 0.2;
     float step = speed * time * 0.01;
-    float stepSize = 10;
+    float stepSize = 15;
     float alpha = (step % stepSize) / stepSize;
-    float sideLen = 1;
+    float sideLen = 0.8;
     if (alpha <= 0.25){ 
       alpha = alpha * 4;
       xr = (x0 - sideLen / 2)*(1-alpha) + (x0 + sideLen / 2)*alpha;
@@ -333,20 +334,26 @@ public void UpdateSquarePosition(long time){
 void keyPressed() {
     if (key == 'q') {
         P += 0.01;
+        System.out.println(P);
     } else if (key == 'a') {
         P -= 0.01;
+        System.out.println(P);
     }
     else if (key == 'w') {
         I += 0.00001;
+        System.out.println(I);
     }
     else if (key == 's') {
         I -= 0.00001;
+        System.out.println(I);
     }
     else if (key == 'e') {
         D += 0.1;
+        System.out.println(D);
     }
     else if (key == 'd') {
         D -= 0.1;
+        System.out.println(D);
     }
     else if (key == 'r') {
         looptime += 100;
