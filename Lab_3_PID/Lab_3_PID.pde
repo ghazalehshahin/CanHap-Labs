@@ -19,7 +19,7 @@ import java.util.concurrent.*;
 import controlP5.*;
 /* end library imports *************************************************************************************************/  
 
-
+String currentUser = "Rishav";
 /* scheduler definition ************************************************************************************************/ 
 private final ScheduledExecutorService scheduler      = Executors.newScheduledThreadPool(1);
 /* end scheduler definition ********************************************************************************************/ 
@@ -234,17 +234,29 @@ void setup(){
     *      linux:        haplyBoard = new Board(this, "/dev/ttyUSB0", 0);
     *      mac:          haplyBoard = new Board(this, "/dev/cu.usbmodem1411", 0);
     */ 
-    haplyBoard          = new Board(this, "COM7", 0);
+    haplyBoard          = new Board(this, Serial.list()[0], 0);
     widgetOne           = new Device(widgetOneID, haplyBoard);
     pantograph          = new Pantograph();
     
     widgetOne.set_mechanism(pantograph);
     
-    widgetOne.add_actuator(1, CW, 2);
-    widgetOne.add_actuator(2, CW, 1);
+    if(currentUser.equals("Rishav")){
+        widgetOne.add_actuator(1, CW, 2);
+        widgetOne.add_actuator(2, CW, 1);
 
-    widgetOne.add_encoder(1, CCW, 180, 4880, 2);
-    widgetOne.add_encoder(2, CCW, 0, 4880, 1); 
+        widgetOne.add_encoder(1, CCW, 180, 4880, 2);
+        widgetOne.add_encoder(2, CCW, 0, 4880, 1); 
+    }
+    else if(currentUser.equals("Ghazaleh")){
+        widgetOne.add_actuator(1, CCW, 2);
+        widgetOne.add_actuator(2, CW, 1);
+
+        widgetOne.add_encoder(1, CCW, 241, 10752, 2);
+        widgetOne.add_encoder(2, CW, -61, 10752, 1);
+    }
+    else{
+        throw new RuntimeException("Incorrect username!");
+    }
     
     widgetOne.device_set_parameters();
         
@@ -287,7 +299,6 @@ public void UpdateCirclePosition(long time){
     float cosVal = cos(step);
     xr = x0 + radius*sinVal;
     yr = y0 + radius*cosVal;
-    println(xr + " " + yr);
 }
 
 
