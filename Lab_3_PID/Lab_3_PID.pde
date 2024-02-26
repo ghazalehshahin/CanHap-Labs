@@ -19,7 +19,7 @@ import java.util.concurrent.*;
 import controlP5.*;
 /* end library imports *************************************************************************************************/  
 
-String currentUser = "Rishav";
+String currentUser = "Ghazaleh";
 /* scheduler definition ************************************************************************************************/ 
 private final ScheduledExecutorService scheduler      = Executors.newScheduledThreadPool(1);
 /* end scheduler definition ********************************************************************************************/ 
@@ -234,7 +234,7 @@ void setup(){
     *      linux:        haplyBoard = new Board(this, "/dev/ttyUSB0", 0);
     *      mac:          haplyBoard = new Board(this, "/dev/cu.usbmodem1411", 0);
     */ 
-    haplyBoard          = new Board(this, Serial.list()[0], 0);
+    haplyBoard          = new Board(this, "COM4", 0);
     widgetOne           = new Device(widgetOneID, haplyBoard);
     pantograph          = new Pantograph();
     
@@ -301,6 +301,31 @@ public void UpdateCirclePosition(long time){
     yr = y0 + radius*cosVal;
 }
 
+public void UpdateSquarePosition(long time){
+    y0 = 0.2;
+    float step = speed * time * 0.01;
+    float stepSize = 15;
+    float alpha = (step % stepSize) / stepSize;
+    float sideLen = 0.8;
+    if (alpha <= 0.25){ 
+      alpha = alpha * 4;
+      xr = (x0 - sideLen / 2)*(1-alpha) + (x0 + sideLen / 2)*alpha;
+      yr = y0 + sideLen / 2;
+    }else if (alpha <= 0.5){
+      alpha = (alpha - 0.25) * 4;
+      xr = x0 + sideLen / 2; 
+      yr = (y0 + sideLen / 2)*(1-alpha) + (y0 - sideLen / 2)*alpha;
+    }else if (alpha <= 0.75){
+      alpha = (alpha - 0.5) * 4;
+      xr = (x0 + sideLen / 2)*(1-alpha) + (x0 - sideLen / 2)*alpha;
+      yr = y0 - sideLen / 2;
+    }else{
+      alpha = (alpha - 0.75) * 4;
+      xr = x0 - sideLen / 2; 
+      yr = (y0 - sideLen / 2)*(1-alpha) + (y0 + sideLen / 2)*alpha;
+    }
+}
+
 
 /* Keyboard inputs *****************************************************************************************************/
 
@@ -309,20 +334,26 @@ public void UpdateCirclePosition(long time){
 void keyPressed() {
     if (key == 'q') {
         P += 0.01;
+        System.out.println(P);
     } else if (key == 'a') {
         P -= 0.01;
+        System.out.println(P);
     }
     else if (key == 'w') {
         I += 0.00001;
+        System.out.println(I);
     }
     else if (key == 's') {
         I -= 0.00001;
+        System.out.println(I);
     }
     else if (key == 'e') {
         D += 0.1;
+        System.out.println(D);
     }
     else if (key == 'd') {
         D -= 0.1;
+        System.out.println(D);
     }
     else if (key == 'r') {
         looptime += 100;
@@ -384,7 +415,8 @@ public void SimulationThread(){
         timetaken=starttime;
         
         programCurrentTime = millis() - programStartTime;
-        UpdateCirclePosition(programCurrentTime);
+        //UpdateCirclePosition(programCurrentTime);
+        UpdateSquarePosition(programCurrentTime);
         renderingForce = true;
         
         if(haplyBoard.data_available()){
