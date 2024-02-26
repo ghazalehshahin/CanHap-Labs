@@ -81,8 +81,9 @@ final int         worldPixelHeight                    = 650;
 
 // used to compute the time difference between two loops for differentiation
 float x_m,y_m;
-float speed, radius;
 float x0, y0;
+float shapesize = 0.8;
+float speed = 0.1;
 
 long programStartTime = 0;
 long programCurrentTime = 0;
@@ -125,6 +126,10 @@ PShape pGraph, joint, endEffector;
 PShape wall;
 PShape target;
 PFont f;
+
+/* user controller elements */
+String shape;
+
 /* end elements definition *********************************************************************************************/ 
 
 
@@ -137,8 +142,8 @@ void setup(){
     size(1000, 700);
     x0 = 0;
     y0 = 0;
-    radius = 0.5;
-    speed = 0.2;
+    speed = 0.1;
+    shape = "circle";
     /* GUI setup */
         smooth();
     cp5 = new ControlP5(this);
@@ -222,7 +227,45 @@ void setup(){
         .setPosition(10,620)
         .setSize(200,50)
         ;
-
+    cp5.addButton("CirclePath")
+        .setValue(0)
+        .setPosition(780,25)
+        .setSize(200,50)
+        ;
+    cp5.addButton("SquarePath")
+        .setValue(0)
+        .setPosition(780,85)
+        .setSize(200,50)
+        ;
+    cp5.addTextlabel("Shape Size")
+                        .setText("Shape Size")
+                        .setPosition(780,145)
+                        .setColorValue(color(255,0,0))
+                        .setFont(createFont("Georgia",20))
+                        ;  
+    cp5.addSlider("shapesize")
+        .setPosition(780,165)
+        .setWidth(200)
+        .setRange(0.1,1) // values can range from big to small as well
+        .setValue(0.8)
+        .setNumberOfTickMarks(16)
+        .setSliderMode(Slider.FLEXIBLE)
+        ;
+        
+     cp5.addTextlabel("Speed")
+                        .setText("Speed")
+                        .setPosition(780,215)
+                        .setColorValue(color(255,0,0))
+                        .setFont(createFont("Georgia",20))
+                        ;  
+    cp5.addSlider("speed")
+        .setPosition(780,235)
+        .setWidth(200)
+        .setRange(0.1,0.5) // values can range from big to small as well
+        .setValue(0.1)
+        .setNumberOfTickMarks(16)
+        .setSliderMode(Slider.FLEXIBLE)
+        ;
     /* device setup */
     
     /**  
@@ -234,7 +277,7 @@ void setup(){
     *      linux:        haplyBoard = new Board(this, "/dev/ttyUSB0", 0);
     *      mac:          haplyBoard = new Board(this, "/dev/cu.usbmodem1411", 0);
     */ 
-    haplyBoard          = new Board(this, "COM4", 0);
+    haplyBoard          = new Board(this, Serial.list()[1], 0);
     widgetOne           = new Device(widgetOneID, haplyBoard);
     pantograph          = new Pantograph();
     
@@ -293,12 +336,18 @@ public void ResetIntegrator(int theValue) {
 public void ResetDevice(int theValue) {
     widgetOne.device_set_parameters();
 }
+public void CirclePath(int theValue){
+    shape = "circle";
+}
+public void SquarePath(int theValue){
+    shape = "square";
+}
 public void UpdateCirclePosition(long time){
     float step = speed * time * 0.01;
     float sinVal = sin(step);
     float cosVal = cos(step);
-    xr = x0 + radius*sinVal;
-    yr = y0 + radius*cosVal;
+    xr = x0 + shapesize*sinVal;
+    yr = y0 + shapesize*cosVal;
 }
 
 public void UpdateSquarePosition(long time){
@@ -306,23 +355,22 @@ public void UpdateSquarePosition(long time){
     float step = speed * time * 0.01;
     float stepSize = 15;
     float alpha = (step % stepSize) / stepSize;
-    float sideLen = 0.8;
     if (alpha <= 0.25){ 
       alpha = alpha * 4;
-      xr = (x0 - sideLen / 2)*(1-alpha) + (x0 + sideLen / 2)*alpha;
-      yr = y0 + sideLen / 2;
+      xr = (x0 - shapesize / 2)*(1-alpha) + (x0 + shapesize / 2)*alpha;
+      yr = y0 + shapesize / 2;
     }else if (alpha <= 0.5){
       alpha = (alpha - 0.25) * 4;
-      xr = x0 + sideLen / 2; 
-      yr = (y0 + sideLen / 2)*(1-alpha) + (y0 - sideLen / 2)*alpha;
+      xr = x0 + shapesize / 2; 
+      yr = (y0 + shapesize / 2)*(1-alpha) + (y0 - shapesize / 2)*alpha;
     }else if (alpha <= 0.75){
       alpha = (alpha - 0.5) * 4;
-      xr = (x0 + sideLen / 2)*(1-alpha) + (x0 - sideLen / 2)*alpha;
-      yr = y0 - sideLen / 2;
+      xr = (x0 + shapesize / 2)*(1-alpha) + (x0 - shapesize / 2)*alpha;
+      yr = y0 - shapesize / 2;
     }else{
       alpha = (alpha - 0.75) * 4;
-      xr = x0 - sideLen / 2; 
-      yr = (y0 - sideLen / 2)*(1-alpha) + (y0 + sideLen / 2)*alpha;
+      xr = x0 - shapesize / 2; 
+      yr = (y0 - shapesize / 2)*(1-alpha) + (y0 + shapesize / 2)*alpha;
     }
 }
 
@@ -415,8 +463,12 @@ public void SimulationThread(){
         timetaken=starttime;
         
         programCurrentTime = millis() - programStartTime;
-        //UpdateCirclePosition(programCurrentTime);
-        UpdateSquarePosition(programCurrentTime);
+        
+        if (shape == "circle"){
+          UpdateCirclePosition(programCurrentTime);
+        }else{
+          UpdateSquarePosition(programCurrentTime);
+        }
         renderingForce = true;
         
         if(haplyBoard.data_available()){
