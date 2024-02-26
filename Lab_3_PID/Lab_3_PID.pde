@@ -39,8 +39,6 @@ int               CCW                                 = 1;
 boolean           renderingForce                     = false;
 /* end device block definition *****************************************************************************************/
 
-
-
 /* framerate definition ************************************************************************************************/
 long              baseFrameRate                       = 120;
 /* end framerate definition ********************************************************************************************/ 
@@ -81,9 +79,14 @@ PVector           deviceOrigin                        = new PVector(0, 0);
 final int         worldPixelWidth                     = 1000;
 final int         worldPixelHeight                    = 650;
 
-float x_m,y_m;
-
 // used to compute the time difference between two loops for differentiation
+float x_m,y_m;
+float speed, radius;
+float x0, y0;
+
+long programStartTime = 0;
+long programCurrentTime = 0;
+
 long oldtime = 0;
 // for changing update rate
 int iter = 0;
@@ -132,7 +135,10 @@ void setup(){
     
     /* screen size definition */
     size(1000, 700);
-    
+    x0 = 0;
+    y0 = 0;
+    radius = 0.5;
+    speed = 0.2;
     /* GUI setup */
         smooth();
     cp5 = new ControlP5(this);
@@ -250,7 +256,8 @@ void setup(){
     /* create pantagraph graphics */
     create_pantagraph();
     
-    
+    programStartTime = millis();
+
     target = createShape(ELLIPSE, 0,0, 20, 20);
     target.setStroke(color(0));
     
@@ -264,8 +271,8 @@ void setup(){
 /* end setup section ***************************************************************************************************/
 
 public void RandomPosition(int theValue) {
-    xr = random(-0.5,0.5);
-    yr = random(-0.5,0.5);
+    // xr = random(-0.5,0.5);
+    // yr = random(-0.5,0.5);
 }
 public void ResetIntegrator(int theValue) {
     cumerrorx= 0;
@@ -273,7 +280,14 @@ public void ResetIntegrator(int theValue) {
 }
 public void ResetDevice(int theValue) {
     widgetOne.device_set_parameters();
-
+}
+public void UpdateCirclePosition(long time){
+    float step = speed * time * 0.01;
+    float sinVal = sin(step);
+    float cosVal = cos(step);
+    xr = x0 + radius*sinVal;
+    yr = y0 + radius*cosVal;
+    println(xr + " " + yr);
 }
 
 
@@ -331,8 +345,6 @@ void draw(){
   if(renderingForce == false){
     background(255); 
     update_animation(angles.x*radsPerDegree, angles.y*radsPerDegree, posEE.x, posEE.y);
-    
-    
   }
 }
 /* end draw section ****************************************************************************************************/
@@ -342,24 +354,26 @@ long timetook = 0;
 long looptiming = 0;
 /* simulation section **************************************************************************************************/
 public void SimulationThread(){
-    while(1==1) {
+    while(true) {
         long starttime = System.nanoTime();
         long timesincelastloop=starttime-timetaken;
         iter+= 1;
         // we check the loop is running at the desired speed (with 10% tolerance)
         if(timesincelastloop >= looptime*1000*1.1) {
             float freq = 1.0/timesincelastloop*1000000.0;
-            println("caution, freq droped to: "+freq + " kHz");
+            // println("caution, freq droped to: "+freq + " kHz");
         }
         else if(iter >= 1000) {
             float freq = 1000.0/(starttime-looptiming)*1000000.0;
-            println("loop running at "  + freq + " kHz");
+            // println("loop running at "  + freq + " kHz");
             iter=0;
             looptiming=starttime;
         }
         
         timetaken=starttime;
         
+        programCurrentTime = millis() - programStartTime;
+        UpdateCirclePosition(programCurrentTime);
         renderingForce = true;
         
         if(haplyBoard.data_available()){
@@ -415,7 +429,7 @@ public void SimulationThread(){
         renderingForce = false;
         long timetook=System.nanoTime()-timetaken;
         if(timetook >= 1000000) {
-            println("Caution, process loop took: " + timetook/1000000.0 + "ms");
+            // println("Caution, process loop took: " + timetook/1000000.0 + "ms");
         }
         else {
             while(System.nanoTime()-starttime < looptime*1000) {
