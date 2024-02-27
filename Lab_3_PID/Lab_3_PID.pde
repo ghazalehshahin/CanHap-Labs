@@ -353,7 +353,7 @@ public void UpdateCirclePosition(long time){
 public void UpdateSquarePosition(long time){
     y0 = 0.2;
     float step = speed * time * 0.01;
-    float stepSize = 15;
+    float stepSize = abs(speed - 0.5) * 100;    
     float alpha = (step % stepSize) / stepSize;
     if (alpha <= 0.25){ 
       alpha = alpha * 4;
@@ -372,6 +372,10 @@ public void UpdateSquarePosition(long time){
       xr = x0 - shapesize / 2; 
       yr = (y0 - shapesize / 2)*(1-alpha) + (y0 + shapesize / 2)*alpha;
     }
+}
+
+public float absolute(float in) {
+  return in >= 0 ? in : -in;
 }
 
 
@@ -459,7 +463,8 @@ public void SimulationThread(){
             iter=0;
             looptiming=starttime;
         }
-        
+        //looptime = (int) (Math.random() * (2000 - 100)) + 100;
+        System.out.println(looptime);
         timetaken=starttime;
         
         programCurrentTime = millis() - programStartTime;
@@ -488,13 +493,15 @@ public void SimulationThread(){
             float xE = pixelsPerMeter * posEE.x;
             float yE = pixelsPerMeter * posEE.y;
             long timedif = System.nanoTime()-oldtime;
-
+             //println("phy: " + xE + " " + yE);
             float dist_X = x_m-xE;
             cumerrorx += dist_X*timedif*0.000000001;
             float dist_Y = y_m-yE;
             cumerrory += dist_Y*timedif*0.000000001;
             //println(dist_Y*k + " " +dist_Y*k);
+
             // println(timedif);
+             //println(timedif + ": " + constrain(I*cumerrorx,-4,4) + " " + constrain(I*cumerrory,-4,4));
             if(timedif > 0) {
                 buffx = (dist_X-oldex)/timedif*1000*1000;
                 buffy = (dist_Y-oldey)/timedif*1000*1000;            
